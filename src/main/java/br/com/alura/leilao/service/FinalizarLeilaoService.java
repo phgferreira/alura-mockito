@@ -29,6 +29,7 @@ public class FinalizarLeilaoService {
 			Lance maiorLance = maiorLanceDadoNoLeilao(leilao);
 			leilao.setLanceVencedor(maiorLance);
 			leilao.fechar();
+
 			leiloes.salvar(leilao);
 			
 			enviadorDeEmails.enviarEmailVencedorLeilao(maiorLance);
