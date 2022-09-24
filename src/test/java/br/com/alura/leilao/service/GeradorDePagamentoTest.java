@@ -43,12 +43,12 @@ class GeradorDePagamentoTest {
 	}
 	
 	@Test
-	void deveriaCriarPagamentoParaVencedorDoLeilao() {
+	void deveriaCriarPagamentoParaOVencedorDoLeilaoNoDiaSeguinte() {
 		Leilao leilao = leilao();
 		Lance vencedor = leilao.getLanceVencedor();
 
 		// Simula uma data fictícia simples
-		LocalDate data = LocalDate.of(2022, 9, 12); // SEGUNDA-FEIRA
+		LocalDate data = LocalDate.of(2022, 9, 11); // SEGUNDA-FEIRA
 		Instant instant = data.atStartOfDay(ZoneId.systemDefault()).toInstant();
 		Mockito.when(clock.instant()).thenReturn(instant);
 		Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
@@ -67,7 +67,33 @@ class GeradorDePagamentoTest {
 		assertEquals(vencedor.getUsuario(), pagamento.getUsuario());
 		assertEquals(leilao, pagamento.getLeilao());
 	}
+
+	@Test
+	void deveriaCriarPagamentoParaOVencedorDoLeilaoDoisDiasDepoisPorSerSabado() {
+		Leilao leilao = leilao();
+		Lance vencedor = leilao.getLanceVencedor();
+
+		// Simula uma data fictícia
+		LocalDate data = LocalDate.of(2022, 9, 17); // SÁBADO
+		Instant instant = data.atStartOfDay(ZoneId.systemDefault()).toInstant();
+		Mockito.when(clock.instant()).thenReturn(instant);
+		Mockito.when(clock.getZone()).thenReturn(ZoneId.systemDefault());
 		
+		// Realiza o procedimento de teste
+		service.gerarPagamento(vencedor);
+		
+		// O captor nos permite capturar o paramento Pagamento que foi passado como parâmetro
+		Mockito.verify(pagamentoDao).salvar(captorPagamento.capture());
+		Pagamento pagamento = captorPagamento.getValue();
+		
+		// Valida o teste
+		assertEquals(data.plusDays(2), pagamento.getVencimento());
+		assertEquals(vencedor.getValor(), pagamento.getValor());
+		assertFalse(pagamento.getPago());
+		assertEquals(vencedor.getUsuario(), pagamento.getUsuario());
+		assertEquals(leilao, pagamento.getLeilao());
+	}
+	
 	private Leilao leilao() {
         Leilao leilao = new Leilao("Celular",
                         new BigDecimal("500"),
