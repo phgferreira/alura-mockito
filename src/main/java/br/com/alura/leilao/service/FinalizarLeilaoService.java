@@ -12,8 +12,13 @@ import br.com.alura.leilao.model.Leilao;
 @Service
 public class FinalizarLeilaoService {
 
-	@Autowired
 	private LeilaoDao leiloes;
+	
+	// É uma boa prática usar o Autowired no construtor porque assim conseguimos passar o Mockito por parâmetro
+	@Autowired
+	public FinalizarLeilaoService(LeilaoDao leiloes) {
+		this.leiloes = leiloes;
+	}
 
 	public void finalizarLeiloesExpirados() {
 		List<Leilao> expirados = leiloes.buscarLeiloesExpirados();
